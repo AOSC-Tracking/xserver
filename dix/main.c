@@ -126,6 +126,10 @@ Equipment Corporation.
 #include "dpmsproc.h"
 #endif
 
+#ifdef RES
+Atom net_wm_pid_prop;
+#endif
+
 extern void Dispatch(void);
 
 CallbackListPtr RootWindowFinalizeCallback = NULL;
@@ -200,6 +204,11 @@ dix_main(int argc, char *argv[], char *envp[])
 
         if (screenInfo.numScreens < 1)
             FatalError("no screens found");
+#ifdef RES
+        net_wm_pid_prop = MakeAtom("_NET_WM_PID", 11, 1);
+        if (net_wm_pid_prop == BAD_RESOURCE)
+            AtomError();
+#endif
         InitExtensions(argc, argv);
 
         for (i = 0; i < screenInfo.numGPUScreens; i++) {

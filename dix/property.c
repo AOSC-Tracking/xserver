@@ -50,6 +50,7 @@ SOFTWARE.
 
 #include <X11/X.h>
 #include <X11/Xproto.h>
+#include <X11/Xatom.h>
 
 #include "dix/dix_priv.h"
 
@@ -59,6 +60,10 @@ SOFTWARE.
 #include "dispatch.h"
 #include "swaprep.h"
 #include "xace.h"
+
+#ifdef RES
+extern Atom net_wm_pid_prop;
+#endif
 
 /*****************************************************************
  * Property Stuff
@@ -86,6 +91,45 @@ PrintPropertys(WindowPtr pWin)
             ErrorF("[dix] %c\n", pProp->data[j]);
         pProp = pProp->next;
     }
+}
+#endif
+
+#ifdef RES
+static void
+maybeTranslateWMPid(WindowPtr pWin, PropertyPtr prop)
+{
+    ClientPtr owner = wClient(pWin);
+    pid_t clientPid;
+    CARD32 *pid;
+
+    /* If the XRes extension is disabled explicitly, do nothing */
+    if (noResExtension)
+        return;
+
+#ifdef XCSECURITY
+    /* If the SECURITY extension is enabled, no nothing */
+    if (!noResExtension)
+        return;
+#endif
+
+    if (owner == NullClient)
+        return;
+
+    if (!owner->local)
+        return;
+
+    if (prop->type != XA_CARDINAL || prop->format != 32 || prop->size != 1)
+        return;
+
+    if (prop->propertyName != net_wm_pid_prop)
+        return;
+
+    clientPid = GetClientPid(owner);
+    if (clientPid < 1) /* Remote or unknown client */
+        return;
+
+    pid = ((CARD32 *) prop->data);
+    *pid = (CARD32) clientPid;
 }
 #endif
 
@@ -363,6 +407,9 @@ dixChangeWindowProperty(ClientPtr pClient, WindowPtr pWin, Atom property,
     else
         return rc;
 
+#ifdef RES
+    maybeTranslateWMPid(pWin, pProp);
+#endif
     if (sendevent)
         deliverPropertyNotifyEvent(pWin, PropertyNewValue, pProp);
 
