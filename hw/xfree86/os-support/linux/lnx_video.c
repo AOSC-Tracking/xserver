@@ -79,7 +79,7 @@ xf86OSInitVidMem(VidMemInfoPtr pVidMem)
 /* I/O Permissions section                                                 */
 /***************************************************************************/
 
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__mips__)
 volatile unsigned char *ioBase = NULL;
 
 #ifndef __NR_pciconfig_iobase
@@ -90,8 +90,11 @@ static Bool
 hwEnableIO(void)
 {
     int fd;
+#if defined(__mips__)
+    unsigned long ioBase_phys = 0x1fd00000;
+#else
     unsigned int ioBase_phys = syscall(__NR_pciconfig_iobase, 2, 0, 0);
-
+#endif
     fd = open("/dev/mem", O_RDWR);
     if (ioBase == NULL) {
         ioBase = (volatile unsigned char *) mmap(0, 0x20000,
