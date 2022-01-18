@@ -910,30 +910,6 @@ xwl_glamor_try_big_gl_api(struct xwl_screen *xwl_screen)
 }
 
 static Bool
-xwl_glamor_try_gles_api(struct xwl_screen *xwl_screen)
-{
-    const EGLint gles_attribs[] = {
-        EGL_CONTEXT_CLIENT_VERSION,
-        2,
-        EGL_NONE,
-    };
-
-    eglBindAPI(EGL_OPENGL_ES_API);
-
-    xwl_screen->egl_context = eglCreateContext(xwl_screen->egl_display,
-                                               EGL_NO_CONFIG_KHR,
-                                               EGL_NO_CONTEXT, gles_attribs);
-
-    if (!xwl_glamor_try_to_make_context_current(xwl_screen)) {
-        ErrorF("Failed to make EGL context current with GLES2\n");
-        xwl_glamor_maybe_destroy_context(xwl_screen);
-        return FALSE;
-    }
-
-    return TRUE;
-}
-
-static Bool
 xwl_glamor_gbm_init_egl(struct xwl_screen *xwl_screen)
 {
     struct xwl_gbm_private *xwl_gbm = xwl_gbm_get(xwl_screen);
@@ -964,9 +940,8 @@ xwl_glamor_gbm_init_egl(struct xwl_screen *xwl_screen)
         goto error;
     }
 
-    if (!xwl_glamor_try_big_gl_api(xwl_screen) &&
-        !xwl_glamor_try_gles_api(xwl_screen)) {
-        ErrorF("Cannot use neither GL nor GLES2\n");
+    if (!xwl_glamor_try_big_gl_api(xwl_screen)) {
+        ErrorF("Cannot use GL\n");
         goto error;
     }
 
