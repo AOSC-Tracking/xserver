@@ -616,7 +616,7 @@ xf86platformAddGPUDevices(DriverPtr drvp)
 int
 xf86platformAddDevice(int index)
 {
-    int i, old_screens, scr_index, scrnum;
+    int i, old_screens, scr_index, scrnum, scridx;
     DriverPtr drvp = NULL;
     screenLayoutPtr layout;
     static const char *hotplug_driver_name = "modesetting";
@@ -684,13 +684,14 @@ xf86platformAddDevice(int index)
    }
    /* attach unbound to the configured protocol screen (or 0) */
    scrnum = xf86GPUScreens[i]->confScreen->screennum;
-   AttachUnboundGPU(xf86Screens[scrnum]->pScreen, xf86GPUScreens[i]->pScreen);
+   scridx = (scrnum > 0)? scrnum - 1 : 0;
+   AttachUnboundGPU(xf86Screens[scridx]->pScreen, xf86GPUScreens[i]->pScreen);
    if (xf86Info.autoBindGPU)
        RRProviderAutoConfigGpuScreen(xf86ScrnToScreen(xf86GPUScreens[i]),
-                                     xf86ScrnToScreen(xf86Screens[scrnum]));
+                                     xf86ScrnToScreen(xf86Screens[scridx]));
 
-   RRResourcesChanged(xf86Screens[scrnum]->pScreen);
-   RRTellChanged(xf86Screens[scrnum]->pScreen);
+   RRResourcesChanged(xf86Screens[scridx]->pScreen);
+   RRTellChanged(xf86Screens[scridx]->pScreen);
 
    return 0;
 }
@@ -699,7 +700,7 @@ void
 xf86platformRemoveDevice(int index)
 {
     EntityPtr entity;
-    int ent_num, i, j, scrnum;
+    int ent_num, i, j, scrnum, scridx;
     Bool found;
 
     for (ent_num = 0; ent_num < xf86NumEntities; ent_num++) {
@@ -727,6 +728,7 @@ xf86platformRemoveDevice(int index)
     }
 
     scrnum = xf86GPUScreens[i]->confScreen->screennum;
+    scridx = (scrnum > 0)? scrnum - 1 : 0;
 
     xf86GPUScreens[i]->pScreen->CloseScreen(xf86GPUScreens[i]->pScreen);
 
@@ -737,8 +739,8 @@ xf86platformRemoveDevice(int index)
 
     xf86_remove_platform_device(index);
 
-    RRResourcesChanged(xf86Screens[scrnum]->pScreen);
-    RRTellChanged(xf86Screens[scrnum]->pScreen);
+    RRResourcesChanged(xf86Screens[scridx]->pScreen);
+    RRTellChanged(xf86Screens[scridx]->pScreen);
  out:
     return;
 }

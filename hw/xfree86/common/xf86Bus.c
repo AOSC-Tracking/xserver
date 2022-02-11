@@ -217,7 +217,8 @@ xf86BusConfig(void)
     for (i = 0; i < xf86NumGPUScreens; i++) {
         layout = xf86BusConfigMatch(xf86GPUScreens[i], TRUE);
         int scrnum = (layout && layout->screen) ? layout->screen->screennum : 0;
-        xf86GPUScreens[i]->confScreen = xf86Screens[scrnum]->confScreen;
+        int scridx = (scrnum > 0)? scrnum - 1 : 0;
+        xf86GPUScreens[i]->confScreen = xf86Screens[scridx]->confScreen;
     }
 
     /* If no screens left, return now.  */
