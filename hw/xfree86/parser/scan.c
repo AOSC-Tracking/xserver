@@ -278,10 +278,9 @@ xf86getToken(const xf86ConfigSymTabRec * tab)
         if (!c) {
             char *ret;
 
-            if (numFiles > 0) {
-		    // xf86_lex_val.str = NULL;
+            if (numFiles > 0)
                 ret = xf86getNextLine();
-            } else {
+            else {
                 if (builtinConfig[builtinIndex] == NULL)
                     ret = NULL;
                 else {
