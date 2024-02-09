@@ -106,6 +106,12 @@ Equipment Corporation.
 #endif
 
 #include <X11/X.h>
+#include <X11/extensions/ge.h>
+#include <X11/extensions/XKBproto.h>
+#include <X11/extensions/XIproto.h>
+#include <X11/extensions/XI2proto.h>
+#include <X11/extensions/XI.h>
+#include <X11/extensions/XI2.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/ge.h>
 #include <X11/extensions/XI.h>
@@ -115,6 +121,7 @@ Equipment Corporation.
 #include <X11/extensions/XI2proto.h>
 
 #include "dix/dix_priv.h"
+#include "dix/dixgrabs_priv.h"
 #include "dix/eventconvert.h"
 #include "dix/exevents_priv.h"
 #include "xkb/xkbsrv_priv.h"
