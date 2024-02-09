@@ -45,6 +45,7 @@
 #endif
 #include "misc.h"
 #include "loaderProcs.h"
+#include "xf86Parser_priv.h"
 
 typedef struct _DevToConfig {
     GDevRec GDev;
