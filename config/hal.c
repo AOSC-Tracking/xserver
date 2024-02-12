@@ -28,16 +28,17 @@
 #include <dix-config.h>
 #endif
 
-#include <dbus/dbus.h>
-#include <hal/libhal.h>
 #include <string.h>
 #include <sys/select.h>
+#include <dbus/dbus.h>
+#include <hal/libhal.h>
+
+#include "config/hotplug_priv.h"
 
 #include "config/dbus-core.h"
 
 #include "input.h"
 #include "inputstr.h"
-#include "hotplug.h"
 #include "config-backends.h"
 #include "os.h"
 
