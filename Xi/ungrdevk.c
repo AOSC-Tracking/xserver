@@ -63,7 +63,6 @@ SOFTWARE.
 #include "inputstr.h"           /* DeviceIntPtr      */
 #include "windowstr.h"          /* window structure  */
 #include "exglobals.h"
-#include "dixgrabs.h"
 #include "xkbsrv.h"
 #include "xkbstr.h"
 #include "ungrdevk.h"
