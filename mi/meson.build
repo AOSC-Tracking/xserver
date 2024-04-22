@@ -11,7 +11,6 @@ srcs_mi = [
     'mifillrct.c',
     'migc.c',
     'miglblt.c',
-    'mioverlay.c',
     'mipointer.c',
     'mipoly.c',
     'mipolypnt.c',
