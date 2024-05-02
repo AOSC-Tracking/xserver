@@ -1606,11 +1606,6 @@ PrivsElevated(void)
 #define REMOVE_ENV_LD 1
 #endif
 
-/* Remove long environment variables? */
-#ifndef REMOVE_LONG_ENV
-#define REMOVE_LONG_ENV 1
-#endif
-
 /* Check args and env only if running setuid (euid == 0 && euid != uid) ? */
 #ifndef CHECK_EUID
 #ifndef WIN32
@@ -1644,7 +1639,6 @@ enum BadCode {
     UnsafeArg,
     ArgTooLong,
     UnprintableArg,
-    EnvTooLong,
     InternalError
 };
 
@@ -1659,7 +1653,7 @@ CheckUserParameters(int argc, char **argv, char **envp)
 {
     enum BadCode bad = NotBad;
     int i = 0, j;
-    char *a, *e = NULL;
+    char *a = NULL;
 
 #if CHECK_EUID
     if (PrivsElevated())
@@ -1702,40 +1696,10 @@ CheckUserParameters(int argc, char **argv, char **envp)
                 }
 #endif
                 if (envp[i] && (strlen(envp[i]) > MAX_ENV_LENGTH)) {
-#if REMOVE_LONG_ENV
                     for (j = i; envp[j]; j++) {
                         envp[j] = envp[j + 1];
                     }
                     i--;
-#else
-                    char *eq;
-                    int len;
-
-                    eq = strchr(envp[i], '=');
-                    if (!eq)
-                        continue;
-                    len = eq - envp[i];
-                    e = strndup(envp[i], len);
-                    if (!e) {
-                        bad = InternalError;
-                        break;
-                    }
-                    if (len >= 4 &&
-                        (strcmp(e + len - 4, "PATH") == 0 ||
-                         strcmp(e, "TERMCAP") == 0)) {
-                        if (strlen(envp[i]) > MAX_ENV_PATH_LENGTH) {
-                            bad = EnvTooLong;
-                            break;
-                        }
-                        else {
-                            free(e);
-                        }
-                    }
-                    else {
-                        bad = EnvTooLong;
-                        break;
-                    }
-#endif
                 }
             }
         }
@@ -1752,9 +1716,6 @@ CheckUserParameters(int argc, char **argv, char **envp)
     case UnprintableArg:
         ErrorF("Command line argument number %d contains unprintable"
                " characters\n", i);
-        break;
-    case EnvTooLong:
-        ErrorF("Environment variable `%s' is too long\n", e);
         break;
     case InternalError:
         ErrorF("Internal Error\n");
