@@ -373,7 +373,7 @@ ProcXFixesGetCursorImage(ClientPtr client)
     pCursor = CursorForClient(client);
     if (!pCursor)
         return BadCursor;
-    rc = XaceHookResourceAccess(client, pCursor->id, X11_RESTYPE_CURSOR,
+    rc = XaceHook(XACE_RESOURCE_ACCESS, client, pCursor->id, X11_RESTYPE_CURSOR,
                   pCursor, X11_RESTYPE_NONE, NULL, DixReadAccess);
     if (rc != Success)
         return rc;
@@ -522,7 +522,7 @@ ProcXFixesGetCursorImageAndName(ClientPtr client)
     pCursor = CursorForClient(client);
     if (!pCursor)
         return BadCursor;
-    rc = XaceHookResourceAccess(client, pCursor->id, X11_RESTYPE_CURSOR,
+    rc = XaceHook(XACE_RESOURCE_ACCESS, client, pCursor->id, X11_RESTYPE_CURSOR,
                   pCursor, X11_RESTYPE_NONE, NULL, DixReadAccess | DixGetAttrAccess);
     if (rc != Success)
         return rc;
@@ -880,7 +880,8 @@ ProcXFixesHideCursor(ClientPtr client)
      * This is the first time this client has hid the cursor
      * for this screen.
      */
-    ret = XaceHookScreenAccess(client, pWin->drawable.pScreen, DixHideAccess);
+    ret = XaceHook(XACE_SCREEN_ACCESS, client, pWin->drawable.pScreen,
+                   DixHideAccess);
     if (ret != Success)
         return ret;
 
@@ -937,7 +938,8 @@ ProcXFixesShowCursor(ClientPtr client)
         return BadMatch;
     }
 
-    rc = XaceHookScreenAccess(client, pWin->drawable.pScreen, DixShowAccess);
+    rc = XaceHook(XACE_SCREEN_ACCESS, client, pWin->drawable.pScreen,
+                  DixShowAccess);
     if (rc != Success)
         return rc;
 
