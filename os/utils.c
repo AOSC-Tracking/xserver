@@ -580,8 +580,7 @@ UseMsg(void)
     ErrorF("+xinerama              Enable XINERAMA extension\n");
     ErrorF("-xinerama              Disable XINERAMA extension\n");
 #endif
-    ErrorF
-        ("-dumbSched             Disable smart scheduling and threaded input, enable old behavior\n");
+    ErrorF("-dumbSched             Disable smart scheduling and threaded input, enable old behavior\n");
     ErrorF("-schedInterval int     Set scheduler interval in msec\n");
     ErrorF("-sigstop               Enable SIGSTOP based startup\n");
     ErrorF("+extension name        Enable extension\n");
@@ -860,21 +859,21 @@ ProcessCommandLine(int argc, char *argv[])
                 nolock = TRUE;
         }
 #endif
-	else if ( strcmp( argv[i], "-maxclients") == 0)
-	{
-	    if (++i < argc) {
-		LimitClients = atoi(argv[i]);
-		if (LimitClients != 64 &&
-		    LimitClients != 128 &&
-		    LimitClients != 256 &&
-		    LimitClients != 512 &&
+        else if ( strcmp( argv[i], "-maxclients") == 0)
+        {
+            if (++i < argc) {
+                LimitClients = atoi(argv[i]);
+                if (LimitClients != 64 &&
+                    LimitClients != 128 &&
+                    LimitClients != 256 &&
+                    LimitClients != 512 &&
                     LimitClients != 1024 &&
                     LimitClients != 2048) {
-		    FatalError("maxclients must be one of 64, 128, 256, 512, 1024 or 2048\n");
-		}
-	    } else
-		UseMsg();
-	}
+                    FatalError("maxclients must be one of 64, 128, 256, 512, 1024 or 2048\n");
+                }
+            } else
+                UseMsg();
+        }
         else if (strcmp(argv[i], "-nolisten") == 0) {
             if (++i < argc) {
                 if (_XSERVTransNoListen(argv[i]))
@@ -1602,26 +1601,6 @@ PrivsElevated(void)
  * external wrapper utility.
  */
 
-/* Consider LD* variables insecure? */
-#ifndef REMOVE_ENV_LD
-#define REMOVE_ENV_LD 1
-#endif
-
-/* Remove long environment variables? */
-#ifndef REMOVE_LONG_ENV
-#define REMOVE_LONG_ENV 1
-#endif
-
-/*
- * Disallow stdout or stderr as pipes?  It's possible to block the X server
- * when piping stdout+stderr to a pipe.
- *
- * Don't enable this because it looks like it's going to cause problems.
- */
-#ifndef NO_OUTPUT_PIPES
-#define NO_OUTPUT_PIPES 0
-#endif
-
 /* Check args and env only if running setuid (euid == 0 && euid != uid) ? */
 #ifndef CHECK_EUID
 #ifndef WIN32
@@ -1631,38 +1610,21 @@ PrivsElevated(void)
 #endif
 #endif
 
-/*
- * Maybe the locale can be faked to make isprint(3) report that everything
- * is printable?  Avoid it by default.
- */
-#ifndef USE_ISPRINT
-#define USE_ISPRINT 0
-#endif
-
 #define MAX_ARG_LENGTH          128
 #define MAX_ENV_LENGTH          256
 #define MAX_ENV_PATH_LENGTH     2048    /* Limit for *PATH and TERMCAP */
 
-#if USE_ISPRINT
-#include <ctype.h>
-#define checkPrintable(c) isprint(c)
-#else
 #define checkPrintable(c) (((c) & 0x7f) >= 0x20 && ((c) & 0x7f) != 0x7f)
-#endif
 
 enum BadCode {
     NotBad = 0,
     UnsafeArg,
     ArgTooLong,
     UnprintableArg,
-    EnvTooLong,
-    OutputIsPipe,
     InternalError
 };
 
-#if defined(VENDORSUPPORT)
-#define BUGADDRESS VENDORSUPPORT
-#elif defined(BUILDERADDR)
+#if defined(BUILDERADDR)
 #define BUGADDRESS BUILDERADDR
 #else
 #define BUGADDRESS "xorg@freedesktop.org"
@@ -1673,7 +1635,7 @@ CheckUserParameters(int argc, char **argv, char **envp)
 {
     enum BadCode bad = NotBad;
     int i = 0, j;
-    char *a, *e = NULL;
+    char *a = NULL;
 
 #if CHECK_EUID
     if (PrivsElevated())
@@ -1708,61 +1670,19 @@ CheckUserParameters(int argc, char **argv, char **envp)
             for (i = 0; envp[i]; i++) {
 
                 /* Check for bad environment variables and values */
-#if REMOVE_ENV_LD
                 while (envp[i] && (strncmp(envp[i], "LD", 2) == 0)) {
                     for (j = i; envp[j]; j++) {
                         envp[j] = envp[j + 1];
                     }
                 }
-#endif
                 if (envp[i] && (strlen(envp[i]) > MAX_ENV_LENGTH)) {
-#if REMOVE_LONG_ENV
                     for (j = i; envp[j]; j++) {
                         envp[j] = envp[j + 1];
                     }
                     i--;
-#else
-                    char *eq;
-                    int len;
-
-                    eq = strchr(envp[i], '=');
-                    if (!eq)
-                        continue;
-                    len = eq - envp[i];
-                    e = strndup(envp[i], len);
-                    if (!e) {
-                        bad = InternalError;
-                        break;
-                    }
-                    if (len >= 4 &&
-                        (strcmp(e + len - 4, "PATH") == 0 ||
-                         strcmp(e, "TERMCAP") == 0)) {
-                        if (strlen(envp[i]) > MAX_ENV_PATH_LENGTH) {
-                            bad = EnvTooLong;
-                            break;
-                        }
-                        else {
-                            free(e);
-                        }
-                    }
-                    else {
-                        bad = EnvTooLong;
-                        break;
-                    }
-#endif
                 }
             }
         }
-#if NO_OUTPUT_PIPES
-        if (!bad) {
-            struct stat buf;
-
-            if (fstat(fileno(stdout), &buf) == 0 && S_ISFIFO(buf.st_mode))
-                bad = OutputIsPipe;
-            if (fstat(fileno(stderr), &buf) == 0 && S_ISFIFO(buf.st_mode))
-                bad = OutputIsPipe;
-        }
-#endif
     }
     switch (bad) {
     case NotBad:
@@ -1776,12 +1696,6 @@ CheckUserParameters(int argc, char **argv, char **envp)
     case UnprintableArg:
         ErrorF("Command line argument number %d contains unprintable"
                " characters\n", i);
-        break;
-    case EnvTooLong:
-        ErrorF("Environment variable `%s' is too long\n", e);
-        break;
-    case OutputIsPipe:
-        ErrorF("Stdout and/or stderr is a pipe\n");
         break;
     case InternalError:
         ErrorF("Internal Error\n");
