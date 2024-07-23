@@ -30,13 +30,16 @@
 #include <dix-config.h>
 #endif
 
+#include "miext/extinit_priv.h"
+
 #include "randrstr_priv.h"
-#include "extinit_priv.h"
 
 /* From render.h */
 #ifndef SubPixelUnknown
 #define SubPixelUnknown 0
 #endif
+
+Bool noRRExtension = FALSE;
 
 #define RR_VALIDATE
 static int RRNScreens;
