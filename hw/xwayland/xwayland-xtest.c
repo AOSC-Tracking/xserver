@@ -854,8 +854,12 @@ xwl_handle_ei_event(int fd, int ready, void *data)
                     /* All events dequeued and client has disconnected in the meantime */
                     xwl_ei_stop_emulating(xwl_ei_client);
                 break;
+            case EI_EVENT_KEYBOARD_MODIFIERS:
+                debug_ei("Ignored event %s (%d)\n", ei_event_type_to_string(type), type);
+                /* Don't care */
+                break;
             default:
-                error_ei("Unhandled event %d\n", type);
+                error_ei("Unhandled event %s (%d)\n", ei_event_type_to_string(type), type);
                 break;
         }
         ei_event_unref(e);
