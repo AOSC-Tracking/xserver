@@ -2573,7 +2573,7 @@ drmmode_crtc_init(ScrnInfoPtr pScrn, drmmode_ptr drmmode, drmModeResPtr mode_res
     crtc = xf86CrtcCreate(pScrn, &drmmode_crtc_funcs);
     if (crtc == NULL)
         return 0;
-    drmmode_crtc = xnfcalloc(1, sizeof(drmmode_crtc_private_rec));
+    drmmode_crtc = XNFcallocarray(1, sizeof(drmmode_crtc_private_rec));
     crtc->driver_private = drmmode_crtc;
     drmmode_crtc->mode_crtc =
         drmModeGetCrtc(drmmode->fd, mode_res->crtcs[num]);
@@ -2924,7 +2924,7 @@ drmmode_output_get_modes(xf86OutputPtr output)
 
     /* modes should already be available */
     for (i = 0; i < koutput->count_modes; i++) {
-        Mode = xnfalloc(sizeof(DisplayModeRec));
+        Mode = XNFalloc(sizeof(DisplayModeRec));
 
         drmmode_ConvertFromKMode(output->scrn, &koutput->modes[i], Mode);
         Modes = xf86ModesAdd(Modes, Mode);
