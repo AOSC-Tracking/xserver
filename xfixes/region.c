@@ -817,7 +817,7 @@ SProcXFixesExpandRegion(ClientPtr client)
     return (*ProcXFixesVector[stuff->xfixesReqType]) (client);
 }
 
-#ifdef PANORAMIX
+#ifdef XINERAMA
 #include "panoramiX.h"
 #include "panoramiXsrv.h"
 
@@ -927,4 +927,4 @@ PanoramiXFixesSetPictureClipRegion(ClientPtr client)
     return result;
 }
 
-#endif
+#endif /* XINERAMA */
