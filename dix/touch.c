@@ -29,12 +29,12 @@
 #endif
 
 #include "dix/dix_priv.h"
+#include "dix/dixgrabs_priv.h"
 #include "dix/eventconvert.h"
 #include "dix/exevents_priv.h"
 
 #include "inputstr.h"
 #include "scrnintstr.h"
-#include "dixgrabs.h"
 #include "eventstr.h"
 #include "exglobals.h"
 #include "inpututils.h"

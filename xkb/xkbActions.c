@@ -36,6 +36,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/keysym.h>
 
 #include "dix/dix_priv.h"
+#include "dix/dixgrabs_priv.h"
 #include "xkb/xkbsrv_priv.h"
 
 #include "misc.h"
@@ -45,7 +46,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "mi.h"
 #include "mipointer.h"
 #include "inpututils.h"
-#include "dixgrabs.h"
 
 #define EXTENSION_EVENT_BASE 64
 
