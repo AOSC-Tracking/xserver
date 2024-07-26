@@ -31,6 +31,10 @@
 
 #include <X11/X.h>
 #include <X11/Xmd.h>
+#include <X11/extensions/XIproto.h>
+
+#include "mi/mipointer_priv.h"
+
 #include "input.h"
 #include "cursor.h"
 #include "mipointer.h"
@@ -41,7 +45,6 @@
 #include "xf86Priv.h"
 #include "xf86_OSproc.h"
 
-#include <X11/extensions/XIproto.h>
 #include "xf86Xinput.h"
 
 #ifdef XFreeXDGA

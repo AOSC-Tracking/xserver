@@ -31,11 +31,13 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <ctype.h>
 #include <stdio.h>
 #include <math.h>
+#include <ctype.h>
 #include <X11/X.h>
 #include <X11/Xproto.h>
 #include <X11/keysym.h>
 
 #include "dix/dix_priv.h"
+#include "mi/mipointer_priv.h"
 #include "xkb/xkbsrv_priv.h"
 
 #include "misc.h"
