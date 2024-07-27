@@ -36,10 +36,13 @@
 #include <stdio.h>
 #include <sys/file.h>           /* needed for FNONBLOCK & FASYNC */
 
-#include "xkbsrv.h"
-
 #include <X11/extensions/XI.h>
 #include <X11/extensions/XIproto.h>
+
+#include "config/hotplug_priv.h"
+#include "os/cmdline.h"
+
+#include "xkbsrv.h"
 #include "XIstubs.h"            /* even though we don't use stubs.  cute, no? */
 #include "exevents.h"
 #include "extinit.h"
@@ -48,12 +51,6 @@
 #include "xserver-properties.h"
 #include "inpututils.h"
 #include "optionstr.h"
-
-#include "os/cmdline.h"
-
-#if defined(CONFIG_UDEV) || defined(CONFIG_HAL)
-#include <hotplug.h>
-#endif
 
 #define AtomFromName(x) MakeAtom(x, strlen(x), 1)
 
