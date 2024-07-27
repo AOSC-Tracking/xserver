@@ -2179,7 +2179,7 @@ DeliverToWindowOwner(DeviceIntPtr dev, WindowPtr win,
     if (IsInterferingGrab(wClient(win), dev, events))
         return EVENT_SKIP;
 
-    if (!XaceHookReceiveAccess(wClient(win), win, events, count)) {
+    if (!XaceHook(XACE_RECEIVE_ACCESS, wClient(win), win, events, count)) {
         int attempt = TryClientEvents(wClient(win), dev, events,
                                       count, win->eventMask,
                                       filter, grab);
@@ -2257,7 +2257,7 @@ DeliverEventToInputClients(DeviceIntPtr dev, InputClients * inputclients,
 
         mask = GetEventMask(dev, events, inputclients);
 
-        if (XaceHookReceiveAccess(client, win, events, count))
+        if (XaceHook(XACE_RECEIVE_ACCESS, client, win, events, count))
             /* do nothing */ ;
         else if ((attempt = TryClientEvents(client, dev,
                                             events, count,
@@ -2536,7 +2536,7 @@ MaybeDeliverEventsToClient(WindowPtr pWin, xEvent *pEvents,
             return XineramaTryClientEventsResult(wClient(pWin), NullGrab,
                                                  pWin->eventMask, filter);
 #endif
-        if (XaceHookReceiveAccess(wClient(pWin), pWin, pEvents, count))
+        if (XaceHook(XACE_RECEIVE_ACCESS, wClient(pWin), pWin, pEvents, count))
             return 1;           /* don't send, but pretend we did */
         return TryClientEvents(wClient(pWin), NULL, pEvents, count,
                                pWin->eventMask, filter, NullGrab);
@@ -2550,7 +2550,7 @@ MaybeDeliverEventsToClient(WindowPtr pWin, xEvent *pEvents,
                 return XineramaTryClientEventsResult(rClient(other), NullGrab,
                                                      other->mask, filter);
 #endif
-            if (XaceHookReceiveAccess(rClient(other), pWin, pEvents,
+            if (XaceHook(XACE_RECEIVE_ACCESS, rClient(other), pWin, pEvents,
                          count))
                 return 1;       /* don't send, but pretend we did */
             return TryClientEvents(rClient(other), NULL, pEvents, count,
@@ -2789,7 +2789,7 @@ DeliverEvent(DeviceIntPtr dev, xEvent *xE, int count,
     Mask filter;
     int deliveries = 0;
 
-    if (XaceHookSendAccess(NULL, dev, win, xE, count) == Success) {
+    if (XaceHook(XACE_SEND_ACCESS, NULL, dev, win, xE, count) == Success) {
         filter = GetEventFilter(dev, xE);
         FixUpEventFromWindow(pSprite, xE, win, child, FALSE);
         deliveries = DeliverEventsToWindow(dev, win, xE, count, filter, grab);
@@ -3626,7 +3626,7 @@ ProcWarpPointer(ClientPtr client)
 
     for (tmp = inputInfo.devices; tmp; tmp = tmp->next) {
         if (GetMaster(tmp, MASTER_ATTACHED) == dev) {
-            rc = XaceHookDeviceAccess(client, dev, DixWriteAccess);
+            rc = XaceHook(XACE_DEVICE_ACCESS, client, dev, DixWriteAccess);
             if (rc != Success)
                 return rc;
         }
@@ -4213,7 +4213,7 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
 
     rc = EventToXI(event, &xE, &count);
     if (rc == Success &&
-        XaceHookSendAccess(NULL, keybd, focus, xE, count) == Success) {
+        XaceHook(XACE_SEND_ACCESS, NULL, keybd, focus, xE, count) == Success) {
         FixUpEventFromWindow(ptr->spriteInfo->sprite, xE, focus, None, FALSE);
         deliveries = DeliverEventsToWindow(keybd, focus, xE, count,
                                            GetEventFilter(keybd, xE), NullGrab);
@@ -4229,7 +4229,7 @@ DeliverFocusedEvent(DeviceIntPtr keybd, InternalEvent *event, WindowPtr window)
     if (sendCore) {
         rc = EventToCore(event, &core, &count);
         if (rc == Success) {
-            if (XaceHookSendAccess(NULL, keybd, focus, core, count) ==
+            if (XaceHook(XACE_SEND_ACCESS, NULL, keybd, focus, core, count) ==
                 Success) {
                 FixUpEventFromWindow(keybd->spriteInfo->sprite, core, focus,
                                      None, FALSE);
@@ -4302,8 +4302,10 @@ DeliverOneGrabbedEvent(InternalEvent *event, DeviceIntPtr dev,
 
     if (rc == Success) {
         FixUpEventFromWindow(pSprite, xE, grab->window, None, TRUE);
-        if (XaceHookSendAccess(0, dev, grab->window, xE, count) ||
-            XaceHookReceiveAccess(rClient(grab), grab->window, xE, count))
+        if (XaceHook(XACE_SEND_ACCESS, 0, dev,
+                     grab->window, xE, count) ||
+            XaceHook(XACE_RECEIVE_ACCESS, rClient(grab),
+                     grab->window, xE, count))
             deliveries = 1;     /* don't send, but pretend we did */
         else if (level != CORE || !IsInterferingGrab(rClient(grab), dev, xE)) {
             deliveries = TryClientEvents(rClient(grab), dev,
@@ -4529,7 +4531,7 @@ EventSelectForWindow(WindowPtr pWin, ClientPtr client, Mask mask)
     }
     check = (mask & ManagerMask);
     if (check) {
-        rc = XaceHookResourceAccess(client, pWin->drawable.id,
+        rc = XaceHook(XACE_RESOURCE_ACCESS, client, pWin->drawable.id,
                       X11_RESTYPE_WINDOW, pWin, X11_RESTYPE_NONE, NULL, DixManageAccess);
         if (rc != Success)
             return rc;
@@ -4703,7 +4705,7 @@ CoreEnterLeaveEvent(DeviceIntPtr mouse,
         ClientPtr client = grab ? rClient(grab) : wClient(pWin);
         int rc;
 
-        rc = XaceHookDeviceAccess(client, keybd, DixReadAccess);
+        rc = XaceHook(XACE_DEVICE_ACCESS, client, keybd, DixReadAccess);
         if (rc == Success)
             memcpy((char *) &ke.map[0], (char *) &keybd->key->down[1], 31);
 
@@ -4814,7 +4816,7 @@ CoreFocusEvent(DeviceIntPtr dev, int type, int mode, int detail, WindowPtr pWin)
         ClientPtr client = wClient(pWin);
         int rc;
 
-        rc = XaceHookDeviceAccess(client, dev, DixReadAccess);
+        rc = XaceHook(XACE_DEVICE_ACCESS, client, dev, DixReadAccess);
         if (rc == Success)
             memcpy((char *) &ke.map[0], (char *) &dev->key->down[1], 31);
 
@@ -4877,7 +4879,7 @@ SetInputFocus(ClientPtr client,
         if (!focusWin->realized)
             return BadMatch;
     }
-    rc = XaceHookDeviceAccess(client, dev, DixSetFocusAccess);
+    rc = XaceHook(XACE_DEVICE_ACCESS, client, dev, DixSetFocusAccess);
     if (rc != Success)
         return Success;
 
@@ -4955,7 +4957,7 @@ ProcGetInputFocus(ClientPtr client)
     /* REQUEST(xReq); */
     REQUEST_SIZE_MATCH(xReq);
 
-    rc = XaceHookDeviceAccess(client, kbd, DixGetFocusAccess);
+    rc = XaceHook(XACE_DEVICE_ACCESS, client, kbd, DixGetFocusAccess);
     if (rc != Success)
         return rc;
 
@@ -5189,7 +5191,7 @@ GrabDevice(ClientPtr client, DeviceIntPtr dev,
 
     if (keyboard_mode == GrabModeSync || pointer_mode == GrabModeSync)
         access_mode |= DixFreezeAccess;
-    rc = XaceHookDeviceAccess(client, dev, access_mode);
+    rc = XaceHook(XACE_DEVICE_ACCESS, client, dev, access_mode);
     if (rc != Success)
         return rc;
 
@@ -5328,7 +5330,7 @@ ProcQueryPointer(ClientPtr client)
     rc = dixLookupWindow(&pWin, stuff->id, client, DixGetAttrAccess);
     if (rc != Success)
         return rc;
-    rc = XaceHookDeviceAccess(client, mouse, DixReadAccess);
+    rc = XaceHook(XACE_DEVICE_ACCESS, client, mouse, DixReadAccess);
     if (rc != Success && rc != BadAccess)
         return rc;
 
@@ -5530,7 +5532,8 @@ ProcSendEvent(ClientPtr client)
     stuff->event.u.u.type |= SEND_EVENT_BIT;
     if (stuff->propagate) {
         for (; pWin; pWin = pWin->parent) {
-            if (XaceHookSendAccess(client, NULL, pWin, &stuff->event, 1))
+            if (XaceHook(XACE_SEND_ACCESS, client, NULL, pWin,
+                         &stuff->event, 1))
                 return Success;
             if (DeliverEventsToWindow(dev, pWin,
                                       &stuff->event, 1, stuff->eventMask,
@@ -5543,7 +5546,7 @@ ProcSendEvent(ClientPtr client)
                 break;
         }
     }
-    else if (!XaceHookSendAccess(client, NULL, pWin, &stuff->event, 1))
+    else if (!XaceHook(XACE_SEND_ACCESS, client, NULL, pWin, &stuff->event, 1))
         DeliverEventsToWindow(dev, pWin, &stuff->event,
                               1, stuff->eventMask, NullGrab);
     return Success;
@@ -5727,7 +5730,7 @@ ProcGrabButton(ClientPtr client)
     if (stuff->pointerMode == GrabModeSync ||
         stuff->keyboardMode == GrabModeSync)
         access_mode |= DixFreezeAccess;
-    rc = XaceHookDeviceAccess(client, ptr, access_mode);
+    rc = XaceHook(XACE_DEVICE_ACCESS, client, ptr, access_mode);
     if (rc != Success)
         return rc;
 
@@ -6133,7 +6136,7 @@ WriteEventsToClient(ClientPtr pClient, int count, xEvent *events)
 int
 SetClientPointer(ClientPtr client, DeviceIntPtr device)
 {
-    int rc = XaceHookDeviceAccess(client, device, DixUseAccess);
+    int rc = XaceHook(XACE_DEVICE_ACCESS, client, device, DixUseAccess);
 
     if (rc != Success)
         return rc;
