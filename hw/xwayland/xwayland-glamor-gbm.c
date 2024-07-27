@@ -37,11 +37,9 @@
 #include <sys/stat.h>
 #include <xf86drm.h>
 #include <drm_fourcc.h>
-#if defined(__linux__)
-#include <linux/dma-buf.h>
-#include <linux/sync_file.h>
+#include "drm-uapi/dma-buf.h"
+#include "drm-uapi/sync_file.h"
 #include <sys/ioctl.h>
-#endif
 
 #define MESA_EGL_NO_X11_HEADERS
 #define EGL_NO_X11
@@ -899,7 +897,6 @@ xwl_glamor_dmabuf_export_sync_file(PixmapPtr pixmap)
     if (!xwl_screen->glamor)
         return -1;
 
-#ifdef DMA_BUF_IOCTL_EXPORT_SYNC_FILE
     xwl_pixmap = xwl_pixmap_get(pixmap);
     num_planes = gbm_bo_get_plane_count(xwl_pixmap->bo);
 
@@ -934,7 +931,6 @@ xwl_glamor_dmabuf_export_sync_file(PixmapPtr pixmap)
             sync_file = merge_args.fence;
         }
     }
-#endif /* DMA_BUF_IOCTL_EXPORT_SYNC_FILE */
     return sync_file;
 }
 
@@ -952,7 +948,6 @@ xwl_glamor_dmabuf_import_sync_file(PixmapPtr pixmap, int sync_file)
     if (!xwl_screen->glamor)
         return;
 
-#ifdef DMA_BUF_IOCTL_IMPORT_SYNC_FILE
     xwl_pixmap = xwl_pixmap_get(pixmap);
     num_planes = gbm_bo_get_plane_count(xwl_pixmap->bo);
 
@@ -977,7 +972,6 @@ xwl_glamor_dmabuf_import_sync_file(PixmapPtr pixmap, int sync_file)
         drmIoctl(plane_fd, DMA_BUF_IOCTL_IMPORT_SYNC_FILE, &import_args);
         close(plane_fd);
     }
-#endif /* DMA_BUF_IOCTL_IMPORT_SYNC_FILE */
     close(sync_file);
 }
 
@@ -1220,12 +1214,7 @@ xwl_gbm_supports_syncobjs(struct xwl_screen *xwl_screen)
     if (errno != ENOENT)
         return FALSE;
 
-#if !defined(DMA_BUF_IOCTL_EXPORT_SYNC_FILE) || \
-    !defined(DMA_BUF_IOCTL_IMPORT_SYNC_FILE)
-    return FALSE;
-#else
     return TRUE;
-#endif
 }
 
 static dri3_screen_info_rec xwl_dri3_info = {
