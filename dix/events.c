@@ -114,6 +114,7 @@ Equipment Corporation.
 #include <X11/extensions/XIproto.h>
 #include <X11/extensions/XI2proto.h>
 
+#include "dix/cursor_priv.h"
 #include "dix/dix_priv.h"
 #include "dix/eventconvert.h"
 #include "dix/exevents_priv.h"
@@ -1047,19 +1048,6 @@ GetSpritePosition(DeviceIntPtr pDev, int *px, int *py)
     *px = pSprite->hotPhys.x;
     *py = pSprite->hotPhys.y;
 }
-
-#ifdef PANORAMIX
-int
-XineramaGetCursorScreen(DeviceIntPtr pDev)
-{
-    if (!noPanoramiXExtension) {
-        return pDev->spriteInfo->sprite->screen->myNum;
-    }
-    else {
-        return 0;
-    }
-}
-#endif                          /* PANORAMIX */
 
 #define TIMESLOP (5 * 60 * 1000)        /* 5 minutes */
 
