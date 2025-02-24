@@ -241,6 +241,34 @@ xf86BusProbe(void)
 {
 #ifdef XSERVER_PLATFORM_BUS
     xf86platformProbe();
+/*
+ * Loongson (MIPS) platforms based on (at least) the 7A bridge chip has
+ * faulty firmware that does not export the correct boot VGA device to the
+ * operating system, causing the X server to mistake the non-connected
+ * output as the primary match for X output - which then causes the X
+ * server to fail to probe for the right driver, in turn causing X server
+ * to fail at startup.
+ *
+ * From our user report, this motherboard/firmware combination is known
+ * to have this issue (there is probably more):
+ *
+ *   BM6J74 (Kunlun 4.00.0024, OEM version LJ74B00BPS)
+ *
+ * The original patch from Loongson/UOS uses an extra call to
+ * `xf86platformPrimary()' to override the result from the above call to
+ * `xf86platformProbe()', prompting X to use the first platform device
+ * found on the device (the first video card/GPU probed by the kernel (for
+ * modesetting or simply as firmware output).
+ *
+ * This will most certainly break other platforms without this issue, so
+ * limit this workaround to little-endian MIPS64 with N64 ABI for now for
+ * which AOSC OS only supports Loongson 3 devices).
+ */
+#if (defined(__mips) && defined (_ABI64) && \
+     defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && \
+     (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__))
+    xf86platformPrimary();
+#endif
     if (ServerIsNotSeat0() && xf86_num_platform_devices > 0)
         return;
 #endif
